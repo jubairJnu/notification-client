@@ -21,6 +21,8 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: <AdminLayout />,
-    children: [{ path: "/notifications", element: <AdminNotificationsPage /> }],
+    children: [
+      { path: "/admin/notifications", element: <AdminNotificationsPage /> },
+    ],
   },
 ]);

@@ -20,12 +20,24 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.body.username });
+        const user = await User.findOne({ email: req.body.email });
         if (!user || !(await user.comparePassword(req.body.password))) {
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
-        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
-        res.send({ user, token });
+        const accessToken = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
+        res.send({ 
+            success: true,
+            data: { 
+                accessToken, 
+                user: {
+                    _id: user._id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    subscriptions: user.subscriptions
+                } 
+            } 
+        });
     } catch (e) {
         res.status(500).send();
     }

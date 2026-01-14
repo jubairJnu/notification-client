@@ -8,6 +8,7 @@ const cors = require('cors');
 const authRouter = require('./routes/auth');
 const notificationRouter = require('./routes/notifications');
 const subscriptionRouter = require('./routes/subscriptions');
+const userRouter = require('./routes/users');
 const User = require('./models/User');
 
 const app = express();
@@ -34,6 +35,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/auth', authRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/subscriptions', subscriptionRouter);
+app.use('/api/users', userRouter);
 
 // Socket.IO Connection Handling
 io.on('connection', (socket) => {

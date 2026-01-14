@@ -10,7 +10,7 @@ export const router = createBrowserRouter([
   {
     element: <UserLayout />,
     children: [
-      { path: "/", element: <App /> },
+      // { path: "/", element: <App /> },
       { path: "/notifications", element: <NotificationFeed /> },
       {
         path: "/settings/notifications",

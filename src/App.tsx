@@ -8,7 +8,7 @@ import AdminDashboard from './pages/AdminDashboard.tsx';
 import UserDashboard from './pages/UserDashboard.tsx';
 import './App.css';
 
-const PrivateRoute = ({ children, role }: { children: React.ReactNode; role?: 'Admin' | 'User' }) => {
+const PrivateRoute = ({ children, role }: { children: React.ReactNode; role?: 'admin' | 'user' }) => {
     const { user, loading } = useAuth();
     if (loading) return <div>Loading...</div>;
     if (!user) return <Navigate to="/login" />;
@@ -25,21 +25,21 @@ const AppRoutes = () => {
             <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
             
             <Route path="/admin" element={
-                <PrivateRoute role="Admin">
+                <PrivateRoute role="admin">
                     <AdminDashboard />
                 </PrivateRoute>
             } />
             
             <Route path="/dashboard" element={
-                <PrivateRoute role="User">
+                <PrivateRoute role="user">
                     <UserDashboard />
                 </PrivateRoute>
             } />
 
             <Route path="/" element={
                 loading ? <div>Loading...</div> : 
-                user?.role === 'Admin' ? <Navigate to="/admin" /> : 
-                user?.role === 'User' ? <Navigate to="/dashboard" /> : 
+                user?.role === 'admin' ? <Navigate to="/admin" /> : 
+                user?.role === 'user' ? <Navigate to="/dashboard" /> : 
                 <Navigate to="/login" />
             } />
         </Routes>

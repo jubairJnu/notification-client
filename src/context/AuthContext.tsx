@@ -6,6 +6,7 @@ interface IUser {
   email: string;
   role: "admin" | "user";
   name: string;
+  subscriptions: string[];
 }
 
 interface AuthContextType {
@@ -33,27 +34,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [loading, setLoading] = useState(true);
 
-//   useEffect(() => {
-//     const fetchUser = async () => {
-//       if (token) {
-//         try {
-//           const res = await api.get("/auth/me");
-//           setUser(res.data);
-//         } catch (err) {
-//           logout();
-//         }
-//       }
-//       setLoading(false);
-//     };
-//     fetchUser();
-//   }, [token]);
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (token) {
+        try {
+          const res = await api.get("/users/me");
+          setUser(res.data.data);
+        } catch (err) {
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+    fetchUser();
+  }, [token]);
 
   const login = async (email: string, password: string) => {
     const res = await api.post("/auth/login", { email, password });
-    console.log(res?.data?.data, "res");
-    setToken(res.data.data?.accessToken);
-
-    localStorage.setItem("token", res.data.data.accessToken);
+    const { accessToken, user } = res.data.data;
+    setToken(accessToken);
+    setUser(user);
+    localStorage.setItem("token", accessToken);
   };
 
   const register = async (

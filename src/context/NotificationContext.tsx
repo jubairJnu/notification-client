@@ -32,7 +32,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (user && token) {
-      const newSocket = io(config.api_url);
+      const newSocket = io(config.socket_url);
 
       newSocket.emit("join", user._id);
 

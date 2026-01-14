@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink } from "react-router";
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 rounded-lg text-sm font-medium transition
@@ -7,7 +6,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 const Navbar = () => {
   return (
     <div>
-      <header className="h-14 border-b  bg-red-600">
+      <header className="h-14 border-b bg-gray-50  ">
         <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4">
           <div className="text-lg font-bold text-gray-900">My App</div>
 

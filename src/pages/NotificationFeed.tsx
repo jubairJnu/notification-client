@@ -2,12 +2,15 @@ import { Bell, Check } from "lucide-react";
 import moment from "moment";
 
 import type { IReceiptRes } from "../types";
+import { useNotifications } from "../context/NotificationContext";
 
 const NotificationFeed = ({
   notificationList,
 }: {
   notificationList: IReceiptRes[];
 }) => {
+  const { markAsRead } = useNotifications();
+
   return (
     <div className="h-full max-h-screen overflow-y-auto">
       <div className="">
@@ -22,7 +25,7 @@ const NotificationFeed = ({
               <div
                 key={notification._id}
                 className={`p-4 hover:bg-blue-50  shadow-lg transition-colors ${
-                  !notification.isRead ? "bg-gray-50" : ""
+                  !notification.isRead ? "bg-gray-50" : "bg-gray-200"
                 }`}
               >
                 <div className="flex gap-4">
@@ -49,7 +52,7 @@ const NotificationFeed = ({
                       <div className="flex gap-2">
                         {!notification.isRead && (
                           <button
-                            // onClick={() => markAsRead(notification.id)}
+                            onClick={() => markAsRead(notification._id)}
                             className="p-1 px-2 flex items-center justify-center gap-0.5 bg-green-200 hover:bg-green-100 rounded-lg drop-shadow-2xl transition-colors"
                             title="Mark as read"
                           >

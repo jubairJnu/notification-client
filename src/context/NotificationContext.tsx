@@ -6,11 +6,17 @@ import config from "../config";
 
 interface Notification {
   _id: string;
-  title: string;
-  message: string;
-  type: string;
-  readBy: string[];
-  timestamp: string;
+  notificationId: {
+    title: string;
+    message: string;
+    category: string;
+    createdBy: {
+      name: string;
+    };
+    status: "draft" | "send";
+  };
+  deliveredAt: string;
+  isRead: boolean;
 }
 
 interface NotificationContextType {
@@ -29,8 +35,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { user, token } = useAuth();
   const [notifications, setNotifications] = useState<any>([]);
-
-  console.log(notifications, "noti");
 
   useEffect(() => {
     if (user && token) {
@@ -72,10 +76,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const markAsRead = async (id: string) => {
     try {
-      await api.patch(`/notifications/${id}/read`);
+      await api.patch(`/recipients/${id}`);
       setNotifications((prev: any) => {
         const updateItem = (n: any) =>
-          n._id === id ? { ...n, readBy: [...(n.readBy || []), user!._id] } : n;
+          n._id === id ? { ...n, isRead: true } : n;
         if (Array.isArray(prev)) {
           return prev.map(updateItem);
         }
@@ -102,9 +106,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const notificationList = Array.isArray(notifications)
     ? notifications
     : notifications?.data || [];
-  const unreadCount = notificationList.filter(
-    (n: any) => user && !n.readBy?.includes(user._id)
-  ).length;
+  const unreadCount = notificationList.filter((n: any) => !n.isRead).length;
 
   return (
     <NotificationContext.Provider

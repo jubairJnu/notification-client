@@ -4,21 +4,6 @@ import { useAuth } from "./AuthContext";
 import api from "../api/axios";
 import config from "../config";
 
-interface Notification {
-  _id: string;
-  notificationId: {
-    title: string;
-    message: string;
-    category: string;
-    createdBy: {
-      name: string;
-    };
-    status: "draft" | "send";
-  };
-  deliveredAt: string;
-  isRead: boolean;
-}
-
 interface NotificationContextType {
   notifications: any;
   unreadCount: number;

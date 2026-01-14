@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 
-import NotificationFeed from "./NotificationFeed";
+import NotificationFeed from "../pages/NotificationFeed";
 import { errorToast, successToast } from "../shared/CustomToast";
 
 const UserDashboard = () => {
@@ -40,7 +40,6 @@ const UserDashboard = () => {
 
   const handleSaveSubscriptions = async () => {
     try {
-      let res;
       const toSubscribe = selectedCategories.filter(
         (cat) => !initialCategories.includes(cat)
       );
@@ -49,10 +48,10 @@ const UserDashboard = () => {
       );
 
       if (toSubscribe.length > 0) {
-        res = await updateSubscriptions(toSubscribe);
+        await updateSubscriptions(toSubscribe);
       }
       if (toUnsubscribe.length > 0) {
-        res = await unSubscribe(toUnsubscribe);
+        await unSubscribe(toUnsubscribe);
       }
 
       setInitialCategories(selectedCategories);

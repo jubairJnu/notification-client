@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Real-Time Notification System (Admin-Driven) – MERN Stack
 
-Currently, two official plugins are available:
+This project implements an admin-driven real-time notification system using the MERN stack (MongoDB, Express, React, Node.js) with Socket.IO for real-time updates.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Administrators can create and send notifications by category, and users receive notifications only if they are subscribed to the relevant categories. The system supports real-time delivery, per-user read/unread tracking, and persistent notification history.
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Overall Approach & Architecture
 
-## Expanding the ESLint configuration
+Since here is role based system distribution i use authentication and defince relative model like notification and notificationRecipients for tracking each user reading status.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+i use here socket.io for real-time communication with backend and frontend . The user get notification immediately without page refreshing by respecting his supscription category .
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Multi-user Real-time Updates (How it’s handled)
+### Category-based Socket.IO Rooms
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Each category maps to a room:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- cat:announcements
+- cat:system_updates
+- cat:task_updates
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+#### When a user connects:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Socket authenticates with JWT
+- Server reads user subscriptions from DB
+- Socket joins rooms for subscribed categories
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+#### When admin creates a notification:
+
+- Backend saves notification in MongoDB
+- Backend finds subscribed users and creates NotificationRecipient records
+- Backend emits the event only to the category room:
+
+io.to("cat:announcements").emit("notification:new", payload)
+
+✅ Only subscribed users are in that room, so only they receive it.
+
+### Frontend State Handling (Context API)
+
+#### The frontend uses Context API to manage:
+- notification list (inbox)
+- unread count
+- subscription categories
+- Real-time update in UI without refresh
+
+#### Persistence
+
+- On page load, frontend fetches notifications via REST API
+- Socket only handles “new incoming” notifications
+
+### Assumptions
+- Authentication is JWT-based
+- Only admins can create notifications
+- Notifications are immediately sent upon creation
+- Socket reconnection is acceptable for subscription updates
+
+### Limitations
+- Free-tier hosting may limit concurrent socket connections

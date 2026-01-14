@@ -14,7 +14,7 @@ interface Notification {
 }
 
 interface NotificationContextType {
-  notifications: Notification[];
+  notifications: any;
   unreadCount: number;
   markAsRead: (id: string) => Promise<void>;
   updateSubscriptions: (categories: string[]) => Promise<void>;
@@ -28,21 +28,33 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { user, token } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<any>([]);
+
+  console.log(notifications, "noti");
 
   useEffect(() => {
     if (user && token) {
-      const newSocket = io(config.socket_url);
+      const newSocket = io(config.socket_url, {
+        auth: {
+          token: token,
+        },
+      });
 
-      newSocket.emit("join", user._id);
-
-      newSocket.on("newNotification", (notification: Notification) => {
-        setNotifications((prev) => [notification, ...prev]);
+      newSocket.on("notification:new", (notification: Notification) => {
+        setNotifications((prev: any) => {
+          if (Array.isArray(prev)) {
+            return [notification, ...prev];
+          }
+          if (prev && typeof prev === "object" && prev.data) {
+            return { ...prev, data: [notification, ...prev.data] };
+          }
+          return [notification];
+        });
       });
 
       const fetchNotifications = async () => {
         try {
-          const res = await api.get("/notifications/my");
+          const res = await api.get("/recipients/my");
           setNotifications(res.data);
         } catch (err) {
           console.error("Failed to fetch notifications", err);
@@ -61,11 +73,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const markAsRead = async (id: string) => {
     try {
       await api.patch(`/notifications/${id}/read`);
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === id ? { ...n, readBy: [...n.readBy, user!._id] } : n
-        )
-      );
+      setNotifications((prev: any) => {
+        const updateItem = (n: any) =>
+          n._id === id ? { ...n, readBy: [...(n.readBy || []), user!._id] } : n;
+        if (Array.isArray(prev)) {
+          return prev.map(updateItem);
+        }
+        if (prev && typeof prev === "object" && prev.data) {
+          return { ...prev, data: prev.data.map(updateItem) };
+        }
+        return prev;
+      });
     } catch (err) {
       console.error("Failed to mark as read", err);
     }
@@ -73,21 +91,29 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateSubscriptions = async (categories: string[]) => {
     try {
-      await api.post("/subscriptions/subscribe", { categories });
-      const res = await api.get("/notifications/my");
+      await api.post("/subscribe", { categories });
+      const res = await api.get("/recipients/my");
       setNotifications(res.data);
     } catch (err) {
       console.error("Failed to update subscriptions", err);
     }
   };
 
-  const unreadCount = notifications.filter(
-    (n) => user && !n.readBy.includes(user._id)
+  const notificationList = Array.isArray(notifications)
+    ? notifications
+    : notifications?.data || [];
+  const unreadCount = notificationList.filter(
+    (n: any) => user && !n.readBy?.includes(user._id)
   ).length;
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, unreadCount, markAsRead, updateSubscriptions }}
+      value={{
+        notifications: notificationList,
+        unreadCount,
+        markAsRead,
+        updateSubscriptions,
+      }}
     >
       {children}
     </NotificationContext.Provider>

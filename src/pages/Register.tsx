@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { errorToast, successToast } from "../shared/CustomToast";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -13,16 +14,21 @@ const Register = () => {
     e.preventDefault();
     try {
       await register(name, email, password, role);
+       successToast();
     } catch (err) {
-      alert("Registration failed");
+      errorToast(err);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
       <div className="bg-white/90 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]">
-        <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">Join Us</h1>
-        <p className="text-gray-600 text-center mb-8">Create your new account</p>
+        <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">
+          Join Us
+        </h1>
+        <p className="text-gray-600 text-center mb-8">
+          Create your new account
+        </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <input
             type="text"
@@ -48,15 +54,15 @@ const Register = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <select 
-            value={role} 
+          <select
+            value={role}
             onChange={(e) => setRole(e.target.value as any)}
             className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white"
           >
             <option value="user">User</option>
             <option value="admin">Admin</option>
           </select>
-          <button 
+          <button
             type="submit"
             className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-200 transform transition-all active:scale-95 hover:translate-y-[-2px]"
           >
@@ -64,7 +70,13 @@ const Register = () => {
           </button>
         </form>
         <p className="mt-8 text-center text-gray-600">
-          Already have an account? <Link to="/login" className="text-indigo-600 font-bold hover:underline">Login</Link>
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-indigo-600 font-bold hover:underline"
+          >
+            Login
+          </Link>
         </p>
       </div>
     </div>

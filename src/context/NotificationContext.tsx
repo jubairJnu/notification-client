@@ -24,6 +24,8 @@ interface NotificationContextType {
   unreadCount: number;
   markAsRead: (id: string) => Promise<void>;
   updateSubscriptions: (categories: string[]) => Promise<void>;
+  getSubscriptions: () => Promise<string[]>;
+  unSubscribe: (categories: string[]) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -95,11 +97,32 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateSubscriptions = async (categories: string[]) => {
     try {
-      await api.post("/subscribe", { categories });
+      await api.patch("/subscribe", { categories });
       const res = await api.get("/recipients/my");
       setNotifications(res.data);
     } catch (err) {
       console.error("Failed to update subscriptions", err);
+    }
+  };
+
+  const getSubscriptions = async () => {
+    try {
+      const res = await api.get("/subscribe/my");
+
+      return res.data?.data?.categories || [];
+    } catch (err) {
+      console.error("Failed to fetch subscriptions", err);
+      return [];
+    }
+  };
+
+  const unSubscribe = async (categories: string[]) => {
+    try {
+      await api.patch("/subscribe/un-subcribe", { categories });
+      const res = await api.get("/recipients/my");
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Failed to unsubscribe", err);
     }
   };
 
@@ -115,6 +138,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         unreadCount,
         markAsRead,
         updateSubscriptions,
+        getSubscriptions,
+        unSubscribe,
       }}
     >
       {children}

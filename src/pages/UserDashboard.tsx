@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 
 import NotificationFeed from "./NotificationFeed";
+import { errorToast, successToast } from "../shared/CustomToast";
 
 const UserDashboard = () => {
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAsRead, updateSubscriptions } =
-    useNotifications();
-  console.log(notifications, "nnnnnn");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    user?.subscriptions || []
-  );
+  const {
+    notifications,
+    unreadCount,
+
+    updateSubscriptions,
+    getSubscriptions,
+    unSubscribe,
+  } = useNotifications();
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [initialCategories, setInitialCategories] = useState<string[]>([]);
 
   const categories = ["System", "Task", "Announcement", "Update"];
+
+  useEffect(() => {
+    const fetchCurrentSubs = async () => {
+      const subs = await getSubscriptions();
+
+      setSelectedCategories(subs);
+      setInitialCategories(subs);
+    };
+    fetchCurrentSubs();
+  }, []);
 
   const handleSubscriptionChange = (category: string) => {
     const newSubs = selectedCategories.includes(category)
@@ -24,10 +40,25 @@ const UserDashboard = () => {
 
   const handleSaveSubscriptions = async () => {
     try {
-      await updateSubscriptions(selectedCategories);
-      alert("Subscriptions updated!");
+      let res;
+      const toSubscribe = selectedCategories.filter(
+        (cat) => !initialCategories.includes(cat)
+      );
+      const toUnsubscribe = initialCategories.filter(
+        (cat) => !selectedCategories.includes(cat)
+      );
+
+      if (toSubscribe.length > 0) {
+        res = await updateSubscriptions(toSubscribe);
+      }
+      if (toUnsubscribe.length > 0) {
+        res = await unSubscribe(toUnsubscribe);
+      }
+
+      setInitialCategories(selectedCategories);
+      successToast();
     } catch (err) {
-      alert("Failed to update subscriptions");
+      errorToast(err);
     }
   };
 
@@ -72,7 +103,7 @@ const UserDashboard = () => {
               Receive alerts for your interests:
             </p>
             <div className="space-y-4 mb-8">
-              {categories.map((cat) => (
+              {categories?.map((cat) => (
                 <label
                   key={cat}
                   className="flex items-center gap-3 cursor-pointer group"
@@ -80,7 +111,7 @@ const UserDashboard = () => {
                   <div className="relative flex items-center justify-center">
                     <input
                       type="checkbox"
-                      checked={selectedCategories.includes(cat)}
+                      checked={selectedCategories?.includes(cat)}
                       onChange={() => handleSubscriptionChange(cat)}
                       className="peer appearance-none w-5 h-5 border-2 border-slate-200 rounded-md checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer"
                     />

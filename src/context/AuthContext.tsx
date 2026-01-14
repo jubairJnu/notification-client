@@ -5,13 +5,19 @@ interface IUser {
   _id: string;
   email: string;
   role: "admin" | "user";
+  name: string;
 }
 
 interface AuthContextType {
   user: IUser | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, role: string) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -27,30 +33,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
-        try {
-          const res = await api.get("/auth/me");
-          setUser(res.data);
-        } catch (err) {
-          logout();
-        }
-      }
-      setLoading(false);
-    };
-    fetchUser();
-  }, [token]);
+//   useEffect(() => {
+//     const fetchUser = async () => {
+//       if (token) {
+//         try {
+//           const res = await api.get("/auth/me");
+//           setUser(res.data);
+//         } catch (err) {
+//           logout();
+//         }
+//       }
+//       setLoading(false);
+//     };
+//     fetchUser();
+//   }, [token]);
 
   const login = async (email: string, password: string) => {
     const res = await api.post("/auth/login", { email, password });
-    setToken(res.data.token);
-    setUser(res.data.user);
-    localStorage.setItem("token", res.data.token);
+    console.log(res?.data?.data, "res");
+    setToken(res.data.data?.accessToken);
+
+    localStorage.setItem("token", res.data.data.accessToken);
   };
 
-  const register = async (email: string, password: string, role: string) => {
-    const res = await api.post("/auth/register", { email, password, role });
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ) => {
+    const res = await api.post("/users", { name, email, password, role });
     setToken(res.data.token);
     setUser(res.data.user);
     localStorage.setItem("token", res.data.token);

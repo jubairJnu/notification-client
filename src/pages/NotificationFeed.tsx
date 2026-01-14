@@ -38,14 +38,16 @@ const NotificationFeed = ({
                           <span
                             className={`text-xs px-2 py-1 rounded-full text-slate-50 bg-emerald-500 `}
                           >
-                            {notification?.notificationId?.category}
+                            {notification?.notificationId?.category ||
+                              notification?.category}
                           </span>
                           <span className="text-xs text-gray-500">
                             {moment(notification.deliveredAt).fromNow()}
                           </span>
                         </div>
                         <h3 className="font-semibold text-gray-900">
-                          {notification?.notificationId?.title}
+                          {notification?.notificationId?.title ||
+                            notification?.title}
                         </h3>
                       </div>
 
@@ -63,7 +65,8 @@ const NotificationFeed = ({
                       </div>
                     </div>
                     <p className="text-gray-600 text-sm">
-                      {notification?.notificationId?.message}
+                      {notification?.notificationId?.message ||
+                        notification?.message}
                     </p>
                   </div>
                 </div>

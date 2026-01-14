@@ -10,6 +10,9 @@ export interface IReceiptRes {
 
     status: "draft" | "send";
   };
+  title: string;
+  message: string;
+  category: string;
   deliveredAt: string;
   isRead: boolean;
 }

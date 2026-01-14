@@ -46,15 +46,22 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         },
       });
 
-      newSocket.on("notification:new", (notification: Notification) => {
+      newSocket.on("notification:new", (socketData: any) => {
+        const normalized = {
+          _id: socketData?._doc?._id || socketData?._id,
+          notificationId: socketData?._doc || socketData?.notificationId,
+          deliveredAt: socketData?._doc?.createdAt || new Date().toISOString(),
+          isRead: socketData?.isRead || false,
+        };
+
         setNotifications((prev: any) => {
           if (Array.isArray(prev)) {
-            return [notification, ...prev];
+            return [normalized, ...prev];
           }
           if (prev && typeof prev === "object" && prev.data) {
-            return { ...prev, data: [notification, ...prev.data] };
+            return { ...prev, data: [normalized, ...prev.data] };
           }
-          return [notification];
+          return [normalized];
         });
       });
 

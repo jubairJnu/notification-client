@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
+import { errorToast, successToast } from "../shared/CustomToast";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -17,11 +18,11 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       await api.post("/notifications", { title, message, category, status });
-      alert("Notification sent successfully!");
+      successToast("Notification sent successfully!");
       setTitle("");
       setMessage("");
     } catch (err) {
-      alert("Failed to send notification");
+      errorToast(err);
     } finally {
       setLoading(false);
     }
@@ -31,7 +32,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-purple-600">
             Admin Control Panel
           </h1>
           <div className="flex items-center gap-6">
